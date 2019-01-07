@@ -29,6 +29,7 @@ class Home extends StatefulWidget
 class HomeState extends State<Home>
 {
   List data;
+  bool _isLoading = false;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,27 +39,36 @@ class HomeState extends State<Home>
           title: Text("JSON LIST VIEW"),
           backgroundColor: Colors.green,
         ),
-        body: ListView.builder(
-            itemCount: data == null ? 0 : data.length,
-            itemBuilder: (BuildContext context,i){
-              return ListTile(
-                title: Text(data[i]["name"]["first"]),
-                subtitle: Text(data[i]["phone"]),
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(data[i]["picture"]["thumbnail"]),
-                ),
-              );
+        body: _isLoading ?Center(
+          child: CircularProgressIndicator(),
+        )
+              :ListView.builder(
+                  itemCount: data == null ? 0 : data.length,
+                  itemBuilder: (BuildContext context,i){
+                    return ListTile(
+                      title: Text(data[i]["name"]["first"]),
+                      subtitle: Text(data[i]["phone"]),
+                      leading: CircleAvatar(
+                        backgroundImage: NetworkImage(data[i]["picture"]["thumbnail"]),
+                      ),
+                    );
 
-            })
-      ),
+                  })
+          ) ,
+
+
     );
   }
   Future<String> makeRequest() async
   {
+    setState(() {
+      _isLoading = true;
+    });
     String url = 'https://randomuser.me/api/?results=15';
     var response = await http
         .get(Uri.encodeFull(url), headers: {"Accept": "application/json"});
     setState(() {
+      _isLoading = false;
        var extdata = json.decode(response.body);
        data = extdata["results"];
     });
